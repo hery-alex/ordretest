@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:ordretest/config/picture_state/picture_overlay.dart';
 import 'package:ordretest/config/picture_state/picture_provider.dart';
 import 'package:ordretest/config/size_config.dart';
 
@@ -55,6 +56,11 @@ class _CameraPageState extends State<CameraPage> {
   }
 }
 
+  bool isSquare = false;
+  bool isCircle = true;
+
+  bool isProcessing = false;
+
 
   @override
   Widget build(BuildContext context) {
@@ -69,13 +75,19 @@ class _CameraPageState extends State<CameraPage> {
                     height: SizeConfig.screenHeight,
                     child: CameraPreview(_cameraController)
                   ),
+                isCircle ? CustomPaint(
+                  painter: CameraOverlayCircle()
+                  )  : isSquare ?   CustomPaint(
+                  painter: CameraOverlaySquare()
+                  ) : const SizedBox(),
                   Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
                     child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
                       width: SizeConfig.screenWidth,
-                      height: 100,
+                      height: 140,
                       decoration: const BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.only(
@@ -83,31 +95,100 @@ class _CameraPageState extends State<CameraPage> {
                           topRight: Radius.circular(10)
                         )
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              shape:  BoxShape.circle,
-                              border: Border.all(
-                                width: 2,
-                                color: Colors.white,
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  shape:  BoxShape.circle,
+                                  border: Border.all(
+                                    width: 2,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed:() async{
+                                    
+                                    setState(() {
+                                      isProcessing = true;
+                                    });
+                                   await  takePicture(context).then((value) {
+                                      Navigator.of(context).pop();
+                                   }).onError((error, stackTrace) {
+                                      setState(() {
+                                        isProcessing = false;
+                                      });
+                                   });
+                                   
+                                  },
+                                  iconSize: 30,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon:isProcessing ? const CircularProgressIndicator(color: Colors.white,) : const Icon(Icons.camera, color: Colors.white),
+                                ),
                               ),
+                              
+                            ],
+                          ), Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  shape:  BoxShape.circle,
+                                  border: Border.all(
+                                    width: 2,
+                                    color:isCircle? Colors.blue : Colors.white,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed:() async{
+
+                                    setState(() {
+                                      isCircle = true;
+                                      isSquare = false;
+                                    });
+                                   
+                                  },
+                                  iconSize: 30,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon:  Icon(Icons.circle, color:isCircle? Colors.blue: Colors.white),
+                                ),
+                              ),
+                               Container(
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  shape:  BoxShape.circle,
+                                  border: Border.all(
+                                    width: 2,
+                                    color: isSquare ? Colors.blue :Colors.white,
+                                  ),
+                                ),
+                                child: IconButton(
+                                  onPressed:() async{
+                                    setState(() {
+                                      isCircle = false;
+                                      isSquare = true;
+                                    });
+                                  },
+                                  iconSize: 30,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon:  Icon(Icons.rectangle, color: isSquare ? Colors.blue :  Colors.white),
+                                ),
+                              ),
+                              ],
                             ),
-                            child: IconButton(
-                              onPressed:() async{
-                               await  takePicture(context).then((value) {
-                                  Navigator.of(context).pop();
-                               });
-                               
-                              },
-                              iconSize: 50,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.circle, color: Colors.white),
-                            ),
-                          )
+                            const SizedBox(
+                            height: 10,
+                          ),
                         ],
                       ),
 

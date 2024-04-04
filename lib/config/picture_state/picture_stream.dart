@@ -7,6 +7,11 @@ class PictureStream {
 
   Stream<Uint8List> get imageStream => pictureStream.stream;
   Function(Uint8List) get addImageToStream => pictureStream.sink.add;
+  
+
+  dispose(){
+  pictureStream.close();
+}
 
 
 }
